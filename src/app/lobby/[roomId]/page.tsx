@@ -30,7 +30,7 @@ export default function LobbyPage({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      if (data.status === 'auction' || data.status === 'showdown') {
+      if (data.status === 'auction' || data.status === 'showdown' || data.status === 'finished') {
         router.push(`/game/${roomId}`);
         return;
       }

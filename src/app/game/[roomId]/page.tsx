@@ -1,6 +1,7 @@
 'use client';
 
-import { use } from 'react';
+import { use, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { usePlayer } from '@/hooks/usePlayer';
 import { useGameState } from '@/hooks/useGameState';
 import { GameBoard } from '@/components/game/GameBoard';
@@ -12,9 +13,27 @@ export default function GamePage({
   params: Promise<{ roomId: string }>;
 }) {
   const { roomId } = use(params);
+  const router = useRouter();
   const { playerId } = usePlayer();
   const { gameState, isLoading, error, submitBid, refreshState } =
     useGameState(roomId, playerId);
+
+  const handlePlayAgain = useCallback(async () => {
+    try {
+      const res = await fetch('/api/game/restart', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, playerId }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error);
+      }
+      router.push(`/lobby/${roomId}`);
+    } catch (err) {
+      console.error('Failed to restart:', err);
+    }
+  }, [roomId, playerId, router]);
 
   if (isLoading) {
     return (
@@ -51,13 +70,19 @@ export default function GamePage({
     );
   }
 
+  // If game was reset to lobby, redirect there
+  if (gameState.status === 'lobby') {
+    router.push(`/lobby/${roomId}`);
+    return null;
+  }
+
   // Showdown / Finished view
   if (gameState.status === 'showdown' || gameState.status === 'finished') {
     return (
       <ShowdownView
         gameState={gameState}
         currentPlayerId={playerId}
-        onPlayAgain={() => window.location.href = '/'}
+        onPlayAgain={handlePlayAgain}
       />
     );
   }
