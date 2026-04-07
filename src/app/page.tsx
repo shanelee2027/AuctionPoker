@@ -1,65 +1,166 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
+import { usePlayer } from '@/hooks/usePlayer';
 
 export default function Home() {
+  const router = useRouter();
+  const { setPlayer } = usePlayer();
+  const [mode, setMode] = useState<'menu' | 'create' | 'join'>('menu');
+  const [name, setName] = useState('');
+  const [roomCode, setRoomCode] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleCreate = async () => {
+    if (!name.trim()) {
+      setError('Enter your name');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/room/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerName: name.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setPlayer(data.playerId, name.trim());
+      router.push(`/lobby/${data.roomId}`);
+    } catch (err) {
+      setError((err as Error).message);
+      setLoading(false);
+    }
+  };
+
+  const handleJoin = async () => {
+    if (!name.trim()) {
+      setError('Enter your name');
+      return;
+    }
+    if (!roomCode.trim()) {
+      setError('Enter a room code');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    try {
+      const res = await fetch('/api/room/join', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          roomId: roomCode.trim().toUpperCase(),
+          playerName: name.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setPlayer(data.playerId, name.trim());
+      router.push(`/lobby/${data.roomId}`);
+    } catch (err) {
+      setError((err as Error).message);
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-green-950 flex items-center justify-center p-4">
+      <div className="max-w-md w-full">
+        {/* Title */}
+        <div className="text-center mb-10">
+          <h1 className="text-5xl font-bold text-amber-400 mb-2">
+            Auction Poker
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+          <p className="text-gray-400">
+            Bid on cards. Build your hand. Win the pot.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+
+        {mode === 'menu' && (
+          <div className="space-y-4">
+            <Button
+              onClick={() => setMode('create')}
+              className="w-full"
+              size="lg"
+            >
+              Create Room
+            </Button>
+            <Button
+              onClick={() => setMode('join')}
+              variant="secondary"
+              className="w-full"
+              size="lg"
+            >
+              Join Room
+            </Button>
+          </div>
+        )}
+
+        {mode === 'create' && (
+          <div className="bg-gray-800/60 rounded-xl p-6 space-y-4">
+            <h2 className="text-xl font-semibold text-white">Create a Room</h2>
+            <Input
+              label="Your Name"
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={20}
+              onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+            <div className="flex gap-3">
+              <Button
+                onClick={() => { setMode('menu'); setError(''); }}
+                variant="secondary"
+              >
+                Back
+              </Button>
+              <Button onClick={handleCreate} disabled={loading} className="flex-1">
+                {loading ? 'Creating...' : 'Create'}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {mode === 'join' && (
+          <div className="bg-gray-800/60 rounded-xl p-6 space-y-4">
+            <h2 className="text-xl font-semibold text-white">Join a Room</h2>
+            <Input
+              label="Your Name"
+              placeholder="Enter your name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={20}
+            />
+            <Input
+              label="Room Code"
+              placeholder="e.g. ABCD"
+              value={roomCode}
+              onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+              maxLength={4}
+              className="font-mono text-lg tracking-widest text-center"
+              onKeyDown={(e) => e.key === 'Enter' && handleJoin()}
+            />
+            {error && <p className="text-red-400 text-sm">{error}</p>}
+            <div className="flex gap-3">
+              <Button
+                onClick={() => { setMode('menu'); setError(''); }}
+                variant="secondary"
+              >
+                Back
+              </Button>
+              <Button onClick={handleJoin} disabled={loading} className="flex-1">
+                {loading ? 'Joining...' : 'Join'}
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
