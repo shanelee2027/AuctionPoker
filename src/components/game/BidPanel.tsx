@@ -7,10 +7,11 @@ interface BidPanelProps {
   maxChips: number;
   bidSubmitted: boolean;
   onSubmitBid: (amount: number) => Promise<void>;
+  onCancelBid: () => Promise<void>;
   roundIndex: number;
 }
 
-export function BidPanel({ maxChips, bidSubmitted, onSubmitBid, roundIndex }: BidPanelProps) {
+export function BidPanel({ maxChips, bidSubmitted, onSubmitBid, onCancelBid, roundIndex }: BidPanelProps) {
   const [bidText, setBidText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,13 +33,35 @@ export function BidPanel({ maxChips, bidSubmitted, onSubmitBid, roundIndex }: Bi
     }
   };
 
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const handleCancel = async () => {
+    setIsCancelling(true);
+    try {
+      await onCancelBid();
+      setIsSubmitting(false);
+    } catch {
+      // bid may have already resolved
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
   if (bidSubmitted) {
     return (
       <div className="bg-gray-800/60 rounded-xl p-6 text-center">
         <div className="text-green-400 text-lg font-semibold mb-1">
           Bid Submitted
         </div>
-        <p className="text-gray-400 text-sm">Waiting for other players...</p>
+        <p className="text-gray-400 text-sm mb-3">Waiting for other players...</p>
+        <Button
+          onClick={handleCancel}
+          disabled={isCancelling}
+          variant="secondary"
+          size="sm"
+        >
+          {isCancelling ? 'Cancelling...' : 'Change Bid'}
+        </Button>
       </div>
     );
   }

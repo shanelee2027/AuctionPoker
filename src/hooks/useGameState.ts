@@ -8,6 +8,7 @@ interface UseGameStateReturn {
   isLoading: boolean;
   error: string | null;
   submitBid: (amount: number) => Promise<void>;
+  cancelBid: () => Promise<void>;
   refreshState: () => Promise<void>;
 }
 
@@ -55,12 +56,10 @@ export function useGameState(
           throw new Error(data.error || 'Failed to submit bid');
         }
 
-        // Optimistically mark bid as submitted
         setGameState((prev) =>
           prev ? { ...prev, myBidSubmitted: true } : prev
         );
 
-        // Immediately refresh to get latest state
         await refreshState();
       } catch (err) {
         setError((err as Error).message);
@@ -70,5 +69,29 @@ export function useGameState(
     [roomId, playerId, refreshState]
   );
 
-  return { gameState, isLoading, error, submitBid, refreshState };
+  const cancelBid = useCallback(async () => {
+    try {
+      const res = await fetch('/api/game/cancel-bid', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId, playerId }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to cancel bid');
+      }
+
+      setGameState((prev) =>
+        prev ? { ...prev, myBidSubmitted: false } : prev
+      );
+
+      await refreshState();
+    } catch (err) {
+      setError((err as Error).message);
+      throw err;
+    }
+  }, [roomId, playerId, refreshState]);
+
+  return { gameState, isLoading, error, submitBid, cancelBid, refreshState };
 }

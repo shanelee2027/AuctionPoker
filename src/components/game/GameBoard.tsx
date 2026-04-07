@@ -11,12 +11,14 @@ interface GameBoardProps {
   gameState: PlayerView;
   currentPlayerId: string;
   onSubmitBid: (amount: number) => Promise<void>;
+  onCancelBid: () => Promise<void>;
 }
 
 export function GameBoard({
   gameState,
   currentPlayerId,
   onSubmitBid,
+  onCancelBid,
 }: GameBoardProps) {
   const playerName = (id: string) =>
     gameState.players.find((p) => p.id === id)?.name;
@@ -73,6 +75,7 @@ export function GameBoard({
                 maxChips={gameState.myChips}
                 bidSubmitted={gameState.myBidSubmitted}
                 onSubmitBid={onSubmitBid}
+                onCancelBid={onCancelBid}
                 roundIndex={gameState.currentGroupIndex}
               />
             )}
