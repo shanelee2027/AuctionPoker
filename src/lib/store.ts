@@ -1,21 +1,33 @@
-import { kv } from '@vercel/kv';
+import { createClient } from 'redis';
 import type { GameState } from './types';
 
 const TTL_SECONDS = 2 * 60 * 60; // 2 hours
 
-// In-memory fallback for local development (when KV is not configured)
-const localGames = new Map<string, string>();
+// Redis client for production (Vercel KV / Redis)
+let redisClient: ReturnType<typeof createClient> | null = null;
 
-function useKV(): boolean {
-  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+async function getRedis() {
+  if (!process.env.REDIS_URL) return null;
+
+  if (!redisClient) {
+    redisClient = createClient({ url: process.env.REDIS_URL });
+    await redisClient.connect();
+  }
+
+  return redisClient;
 }
+
+// In-memory fallback for local development
+const localGames = new Map<string, string>();
 
 export async function getGame(roomId: string): Promise<GameState | null> {
   const key = `game:${roomId}`;
+  const redis = await getRedis();
 
-  if (useKV()) {
-    const data = await kv.get<GameState>(key);
-    return data ?? null;
+  if (redis) {
+    const data = await redis.get(key);
+    if (!data) return null;
+    return JSON.parse(data) as GameState;
   }
 
   const data = localGames.get(key);
@@ -25,20 +37,23 @@ export async function getGame(roomId: string): Promise<GameState | null> {
 
 export async function setGame(roomId: string, state: GameState): Promise<void> {
   const key = `game:${roomId}`;
+  const json = JSON.stringify(state);
+  const redis = await getRedis();
 
-  if (useKV()) {
-    await kv.set(key, state, { ex: TTL_SECONDS });
+  if (redis) {
+    await redis.set(key, json, { EX: TTL_SECONDS });
     return;
   }
 
-  localGames.set(key, JSON.stringify(state));
+  localGames.set(key, json);
 }
 
 export async function deleteGame(roomId: string): Promise<void> {
   const key = `game:${roomId}`;
+  const redis = await getRedis();
 
-  if (useKV()) {
-    await kv.del(key);
+  if (redis) {
+    await redis.del(key);
     return;
   }
 
