@@ -21,9 +21,9 @@ const rankSizes = {
 };
 
 const suitBgSizes = {
-  sm: 'text-2xl',
-  md: 'text-4xl',
-  lg: 'text-6xl',
+  sm: 'text-4xl',
+  md: 'text-6xl',
+  lg: 'text-8xl',
 };
 
 export function PlayingCard({ card, size = 'md' }: PlayingCardProps) {

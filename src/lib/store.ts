@@ -1,53 +1,46 @@
+import { kv } from '@vercel/kv';
 import type { GameState } from './types';
 
-// In-memory store for local development
-// In production, replace with Vercel KV (@vercel/kv)
-const games = new Map<string, string>();
+const TTL_SECONDS = 2 * 60 * 60; // 2 hours
 
-const TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
-const expirations = new Map<string, NodeJS.Timeout>();
+// In-memory fallback for local development (when KV is not configured)
+const localGames = new Map<string, string>();
+
+function useKV(): boolean {
+  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+}
 
 export async function getGame(roomId: string): Promise<GameState | null> {
-  const data = games.get(`game:${roomId}`);
+  const key = `game:${roomId}`;
+
+  if (useKV()) {
+    const data = await kv.get<GameState>(key);
+    return data ?? null;
+  }
+
+  const data = localGames.get(key);
   if (!data) return null;
   return JSON.parse(data) as GameState;
 }
 
 export async function setGame(roomId: string, state: GameState): Promise<void> {
   const key = `game:${roomId}`;
-  games.set(key, JSON.stringify(state));
 
-  // Reset TTL
-  const existing = expirations.get(key);
-  if (existing) clearTimeout(existing);
-  expirations.set(
-    key,
-    setTimeout(() => {
-      games.delete(key);
-      expirations.delete(key);
-    }, TTL_MS)
-  );
+  if (useKV()) {
+    await kv.set(key, state, { ex: TTL_SECONDS });
+    return;
+  }
+
+  localGames.set(key, JSON.stringify(state));
 }
 
 export async function deleteGame(roomId: string): Promise<void> {
   const key = `game:${roomId}`;
-  games.delete(key);
-  const timer = expirations.get(key);
-  if (timer) {
-    clearTimeout(timer);
-    expirations.delete(key);
+
+  if (useKV()) {
+    await kv.del(key);
+    return;
   }
-}
 
-// Optimistic locking helper
-export async function updateGame(
-  roomId: string,
-  updater: (state: GameState) => GameState
-): Promise<GameState> {
-  const state = await getGame(roomId);
-  if (!state) throw new Error('Game not found');
-
-  const newState = updater(state);
-  await setGame(roomId, newState);
-  return newState;
+  localGames.delete(key);
 }
