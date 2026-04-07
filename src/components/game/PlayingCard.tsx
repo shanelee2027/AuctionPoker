@@ -16,14 +16,14 @@ const sizeClasses = {
 
 const rankSizes = {
   sm: 'text-sm',
-  md: 'text-lg',
-  lg: 'text-2xl',
+  md: 'text-base',
+  lg: 'text-xl',
 };
 
-const suitBgSizes = {
-  sm: 'text-4xl',
-  md: 'text-6xl',
-  lg: 'text-8xl',
+const suitSizes = {
+  sm: 'text-lg',
+  md: 'text-2xl',
+  lg: 'text-3xl',
 };
 
 export function PlayingCard({ card, size = 'md' }: PlayingCardProps) {
@@ -47,26 +47,22 @@ export function PlayingCard({ card, size = 'md' }: PlayingCardProps) {
 
   const isRed = card.suit === 'hearts' || card.suit === 'diamonds';
   const textColor = isRed ? 'text-red-500' : 'text-gray-900';
-  const suitColor = isRed ? 'text-red-200' : 'text-gray-300';
   const symbol = card.suit ? SUIT_SYMBOLS[card.suit] : '';
 
   return (
     <div
       className={`
         ${sizeClasses[size]} rounded-lg border border-gray-300
-        bg-white flex items-center justify-center
+        bg-white flex flex-col items-center justify-center
         shadow-md hover:shadow-lg transition-shadow
-        relative overflow-hidden
         ${card.faceDown ? 'ring-2 ring-amber-400' : ''}
       `}
     >
-      {/* Large suit symbol as background */}
-      <span className={`absolute ${suitBgSizes[size]} ${suitColor} opacity-40 select-none`}>
-        {symbol}
-      </span>
-      {/* Rank on top */}
-      <span className={`relative ${rankSizes[size]} ${textColor} font-bold z-10`}>
+      <span className={`${rankSizes[size]} ${textColor} font-bold leading-tight`}>
         {card.rank}
+      </span>
+      <span className={`${suitSizes[size]} ${textColor} leading-tight`}>
+        {symbol}
       </span>
     </div>
   );

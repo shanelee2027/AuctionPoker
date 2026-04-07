@@ -14,7 +14,7 @@ export function usePlayer(): PlayerIdentity {
   const [playerName, setPlayerName] = useState<string | null>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('auctionPokerPlayer');
+    const stored = sessionStorage.getItem('auctionPokerPlayer');
     if (stored) {
       const { id, name } = JSON.parse(stored);
       setPlayerId(id);
@@ -25,13 +25,13 @@ export function usePlayer(): PlayerIdentity {
   const setPlayer = (id: string, name: string) => {
     setPlayerId(id);
     setPlayerName(name);
-    localStorage.setItem('auctionPokerPlayer', JSON.stringify({ id, name }));
+    sessionStorage.setItem('auctionPokerPlayer', JSON.stringify({ id, name }));
   };
 
   const clearPlayer = () => {
     setPlayerId(null);
     setPlayerName(null);
-    localStorage.removeItem('auctionPokerPlayer');
+    sessionStorage.removeItem('auctionPokerPlayer');
   };
 
   return { playerId, playerName, setPlayer, clearPlayer };
