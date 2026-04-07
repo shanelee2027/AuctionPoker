@@ -2,7 +2,7 @@
 
 A strategic multiplayer card game where poker meets auctions. Bid on groups of cards, build the best hand, and outsmart your opponents.
 
-**[Play Now →](#)** *(hosted on Vercel)*
+**[Play Now](https://auctionpoker.vercel.app/)** *(hosted on Vercel)*
 
 ---
 
