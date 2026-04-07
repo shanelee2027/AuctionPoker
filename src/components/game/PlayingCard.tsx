@@ -9,9 +9,21 @@ interface PlayingCardProps {
 }
 
 const sizeClasses = {
-  sm: 'w-10 h-14 text-xs',
-  md: 'w-14 h-20 text-sm',
-  lg: 'w-20 h-28 text-lg',
+  sm: 'w-10 h-14',
+  md: 'w-14 h-20',
+  lg: 'w-20 h-28',
+};
+
+const rankSizes = {
+  sm: 'text-sm',
+  md: 'text-lg',
+  lg: 'text-2xl',
+};
+
+const suitBgSizes = {
+  sm: 'text-2xl',
+  md: 'text-4xl',
+  lg: 'text-6xl',
 };
 
 export function PlayingCard({ card, size = 'md' }: PlayingCardProps) {
@@ -35,26 +47,27 @@ export function PlayingCard({ card, size = 'md' }: PlayingCardProps) {
 
   const isRed = card.suit === 'hearts' || card.suit === 'diamonds';
   const textColor = isRed ? 'text-red-500' : 'text-gray-900';
+  const suitColor = isRed ? 'text-red-200' : 'text-gray-300';
   const symbol = card.suit ? SUIT_SYMBOLS[card.suit] : '';
 
   return (
     <div
       className={`
         ${sizeClasses[size]} rounded-lg border border-gray-300
-        bg-white flex flex-col items-center justify-between
-        p-1 shadow-md hover:shadow-lg transition-shadow
+        bg-white flex items-center justify-center
+        shadow-md hover:shadow-lg transition-shadow
+        relative overflow-hidden
         ${card.faceDown ? 'ring-2 ring-amber-400' : ''}
       `}
     >
-      <div className={`self-start leading-none ${textColor} font-bold`}>
-        <div>{card.rank}</div>
-        <div>{symbol}</div>
-      </div>
-      <div className={`text-xl ${textColor}`}>{symbol}</div>
-      <div className={`self-end leading-none ${textColor} font-bold rotate-180`}>
-        <div>{card.rank}</div>
-        <div>{symbol}</div>
-      </div>
+      {/* Large suit symbol as background */}
+      <span className={`absolute ${suitBgSizes[size]} ${suitColor} opacity-40 select-none`}>
+        {symbol}
+      </span>
+      {/* Rank on top */}
+      <span className={`relative ${rankSizes[size]} ${textColor} font-bold z-10`}>
+        {card.rank}
+      </span>
     </div>
   );
 }

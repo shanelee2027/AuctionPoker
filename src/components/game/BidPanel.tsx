@@ -1,22 +1,32 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '../ui/Button';
 
 interface BidPanelProps {
   maxChips: number;
   bidSubmitted: boolean;
   onSubmitBid: (amount: number) => Promise<void>;
+  roundIndex: number;
 }
 
-export function BidPanel({ maxChips, bidSubmitted, onSubmitBid }: BidPanelProps) {
-  const [bidAmount, setBidAmount] = useState(0);
+export function BidPanel({ maxChips, bidSubmitted, onSubmitBid, roundIndex }: BidPanelProps) {
+  const [bidText, setBidText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Reset state when a new round starts
+  useEffect(() => {
+    setBidText('');
+    setIsSubmitting(false);
+  }, [roundIndex]);
+
+  const bidAmount = bidText === '' ? 0 : parseInt(bidText, 10) || 0;
+  const clampedBid = Math.min(Math.max(0, bidAmount), maxChips);
 
   const handleSubmit = async () => {
     setIsSubmitting(true);
     try {
-      await onSubmitBid(bidAmount);
+      await onSubmitBid(clampedBid);
     } catch {
       setIsSubmitting(false);
     }
@@ -47,21 +57,26 @@ export function BidPanel({ maxChips, bidSubmitted, onSubmitBid }: BidPanelProps)
             type="range"
             min={0}
             max={maxChips}
-            value={bidAmount}
-            onChange={(e) => setBidAmount(Number(e.target.value))}
+            value={clampedBid}
+            onChange={(e) => setBidText(e.target.value)}
             className="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-amber-500"
           />
         </div>
 
         <div className="flex items-center gap-3">
           <input
-            type="number"
-            min={0}
-            max={maxChips}
-            value={bidAmount}
+            type="text"
+            inputMode="numeric"
+            value={bidText}
+            placeholder="0"
             onChange={(e) => {
-              const val = Math.min(Math.max(0, Number(e.target.value)), maxChips);
-              setBidAmount(val);
+              const raw = e.target.value.replace(/[^0-9]/g, '');
+              if (raw === '') {
+                setBidText('');
+              } else {
+                const num = Math.min(parseInt(raw, 10), maxChips);
+                setBidText(String(num));
+              }
             }}
             className="w-24 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg text-white text-center text-lg font-bold focus:outline-none focus:ring-2 focus:ring-amber-500"
           />
@@ -71,14 +86,14 @@ export function BidPanel({ maxChips, bidSubmitted, onSubmitBid }: BidPanelProps)
             {[0, 10, 25, 50].map((preset) => (
               <button
                 key={preset}
-                onClick={() => setBidAmount(Math.min(preset, maxChips))}
+                onClick={() => setBidText(String(Math.min(preset, maxChips)))}
                 className="px-2 py-1 text-xs bg-gray-700 hover:bg-gray-600 rounded text-gray-300 transition-colors"
               >
                 {preset}
               </button>
             ))}
             <button
-              onClick={() => setBidAmount(maxChips)}
+              onClick={() => setBidText(String(maxChips))}
               className="px-2 py-1 text-xs bg-amber-800 hover:bg-amber-700 rounded text-amber-200 transition-colors"
             >
               All In
@@ -92,7 +107,7 @@ export function BidPanel({ maxChips, bidSubmitted, onSubmitBid }: BidPanelProps)
           className="w-full"
           size="lg"
         >
-          {isSubmitting ? 'Submitting...' : `Bid ${bidAmount} Chips`}
+          {isSubmitting ? 'Submitting...' : `Bid ${clampedBid} Chips`}
         </Button>
       </div>
     </div>

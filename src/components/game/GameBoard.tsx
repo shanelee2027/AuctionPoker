@@ -73,6 +73,7 @@ export function GameBoard({
                 maxChips={gameState.myChips}
                 bidSubmitted={gameState.myBidSubmitted}
                 onSubmitBid={onSubmitBid}
+                roundIndex={gameState.currentGroupIndex}
               />
             )}
 
@@ -93,6 +94,9 @@ export function GameBoard({
                     player={player}
                     isCurrentPlayer={player.id === currentPlayerId}
                     showBidStatus={isAuction}
+                    wonGroups={gameState.groups.filter(
+                      (g) => g.auctioned && g.winnerId === player.id
+                    )}
                   />
                 ))}
               </div>
