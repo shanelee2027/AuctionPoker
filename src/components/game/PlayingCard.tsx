@@ -55,9 +55,13 @@ export function PlayingCard({ card, size = 'md' }: PlayingCardProps) {
         ${sizeClasses[size]} rounded-lg border border-gray-300
         bg-white flex flex-col items-center justify-center
         shadow-md hover:shadow-lg transition-shadow
-        ${card.faceDown ? 'ring-2 ring-amber-400' : ''}
+        relative overflow-hidden
       `}
     >
+      {/* Blue stripe for cards that were face-down (hidden from opponents) */}
+      {card.faceDown && (
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-blue-500" />
+      )}
       <span className={`${rankSizes[size]} ${textColor} font-bold leading-tight`}>
         {card.rank}
       </span>

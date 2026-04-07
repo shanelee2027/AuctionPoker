@@ -17,8 +17,8 @@ export const MIN_PLAYERS = 2;
 export const MAX_PLAYERS = 3;
 export const MIN_GROUPS = 5;
 export const MAX_GROUPS = 8;
-export const FACE_DOWN_COUNT_MIN = 3;
-export const FACE_DOWN_COUNT_MAX = 5;
+export const FACE_DOWN_COUNT_MIN = 4;
+export const FACE_DOWN_COUNT_MAX = 8;
 export const DECK_SIZE = 24; // 4 suits * 6 ranks
 
 export const SUIT_SYMBOLS: Record<Suit, string> = {
