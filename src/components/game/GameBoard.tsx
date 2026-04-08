@@ -6,6 +6,7 @@ import { BidPanel } from './BidPanel';
 import { PlayerBar } from './PlayerBar';
 import { AuctionHistory } from './AuctionHistory';
 import { WonCards } from './WonCards';
+import { HiddenCards } from './HiddenCards';
 
 interface GameBoardProps {
   gameState: PlayerView;
@@ -82,6 +83,9 @@ export function GameBoard({
 
             {/* Won Cards */}
             <WonCards cards={gameState.myCards} bestHand={gameState.myHand} />
+
+            {/* Hidden Cards - process of elimination */}
+            {isAuction && <HiddenCards gameState={gameState} />}
           </div>
 
           {/* Sidebar: players + history */}

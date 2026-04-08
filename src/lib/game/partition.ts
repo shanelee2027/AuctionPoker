@@ -8,12 +8,14 @@ import {
 } from '../constants';
 import { randomInt } from '../utils';
 
-export function partitionDeck(cards: Card[]): CardGroup[] {
+export function partitionDeck(cards: Card[], playerCount: number): CardGroup[] {
   if (cards.length !== DECK_SIZE) {
     throw new Error(`Expected ${DECK_SIZE} cards, got ${cards.length}`);
   }
 
-  const sizes = generateGroupSizes();
+  const minGroups = playerCount >= 3 ? 6 : MIN_GROUPS;
+  const maxGroups = playerCount >= 3 ? 9 : MAX_GROUPS;
+  const sizes = generateGroupSizes(minGroups, maxGroups);
   const groups: CardGroup[] = [];
   let offset = 0;
 
@@ -34,10 +36,10 @@ export function partitionDeck(cards: Card[]): CardGroup[] {
   return groups;
 }
 
-function generateGroupSizes(): number[] {
+function generateGroupSizes(minGroups: number, maxGroups: number): number[] {
   // Retry until we get a valid partition
   for (let attempt = 0; attempt < 100; attempt++) {
-    const numGroups = randomInt(MIN_GROUPS, MAX_GROUPS);
+    const numGroups = randomInt(minGroups, maxGroups);
     const sizes = randomPartition(DECK_SIZE, numGroups);
 
     if (!sizes) continue;

@@ -20,7 +20,7 @@ export function createGame(
   players: { id: string; name: string; isHost: boolean }[]
 ): GameState {
   const deck = shuffleDeck(createDeck());
-  const groups = partitionDeck(deck);
+  const groups = partitionDeck(deck, players.length);
 
   return {
     id: roomId,
