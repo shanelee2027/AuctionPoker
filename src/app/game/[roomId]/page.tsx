@@ -15,7 +15,7 @@ export default function GamePage({
   const { roomId } = use(params);
   const router = useRouter();
   const { playerId } = usePlayer();
-  const { gameState, isLoading, error, submitBid, cancelBid, refreshState } =
+  const { gameState, isLoading, error, submitBid, cancelBid, sendMessage, refreshState } =
     useGameState(roomId, playerId);
 
   const handlePlayAgain = useCallback(async () => {
@@ -94,6 +94,7 @@ export default function GamePage({
       currentPlayerId={playerId}
       onSubmitBid={submitBid}
       onCancelBid={cancelBid}
+      onSendMessage={sendMessage}
     />
   );
 }

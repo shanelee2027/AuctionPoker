@@ -33,6 +33,7 @@ export async function POST(request: Request) {
       groups: [],
       currentGroupIndex: 0,
       auctionResults: [],
+      messages: [],
       version: 1,
       createdAt: Date.now(),
     };

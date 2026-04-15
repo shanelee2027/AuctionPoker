@@ -9,6 +9,7 @@ interface UseGameStateReturn {
   error: string | null;
   submitBid: (amount: number) => Promise<void>;
   cancelBid: () => Promise<void>;
+  sendMessage: (text: string) => Promise<void>;
   refreshState: () => Promise<void>;
 }
 
@@ -93,5 +94,28 @@ export function useGameState(
     }
   }, [roomId, playerId, refreshState]);
 
-  return { gameState, isLoading, error, submitBid, cancelBid, refreshState };
+  const sendMessage = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+      try {
+        const res = await fetch('/api/game/message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ roomId, playerId, text: trimmed }),
+        });
+        if (!res.ok) {
+          const data = await res.json();
+          throw new Error(data.error || 'Failed to send message');
+        }
+        await refreshState();
+      } catch (err) {
+        setError((err as Error).message);
+        throw err;
+      }
+    },
+    [roomId, playerId, refreshState]
+  );
+
+  return { gameState, isLoading, error, submitBid, cancelBid, sendMessage, refreshState };
 }

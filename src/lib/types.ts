@@ -33,6 +33,14 @@ export interface AuctionResult {
 
 export type GameStatus = 'lobby' | 'auction' | 'showdown' | 'finished';
 
+export interface ChatMessage {
+  id: string;
+  playerId: string;
+  playerName: string;
+  text: string;
+  timestamp: number;
+}
+
 export interface GameState {
   id: string;
   status: GameStatus;
@@ -41,6 +49,7 @@ export interface GameState {
   groups: CardGroup[];
   currentGroupIndex: number;
   auctionResults: AuctionResult[];
+  messages: ChatMessage[];
   version: number;
   createdAt: number;
 }
@@ -79,6 +88,7 @@ export interface PlayerView {
   myBidSubmitted: boolean;
   myHand: HandResult | null;
   winner: { playerId: string; playerName: string; hand: HandResult } | null;
+  messages: ChatMessage[];
 }
 
 export interface PlayerPublicInfo {

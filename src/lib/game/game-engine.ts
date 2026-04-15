@@ -38,6 +38,7 @@ export function createGame(
     groups,
     currentGroupIndex: 0,
     auctionResults: [],
+    messages: [],
     version: 1,
     createdAt: Date.now(),
   };
@@ -247,5 +248,6 @@ export function getPlayerView(
     myBidSubmitted: player.currentBid !== null,
     myHand,
     winner,
+    messages: state.messages ?? [],
   };
 }

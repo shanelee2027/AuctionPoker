@@ -31,6 +31,7 @@ export async function POST(request: Request) {
       groups: [],
       currentGroupIndex: 0,
       auctionResults: [],
+      messages: state.messages ?? [],
       version: state.version + 1,
       createdAt: Date.now(),
     };

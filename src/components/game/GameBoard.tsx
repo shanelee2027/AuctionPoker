@@ -7,12 +7,14 @@ import { PlayerBar } from './PlayerBar';
 import { AuctionHistory } from './AuctionHistory';
 import { WonCards } from './WonCards';
 import { HiddenCards } from './HiddenCards';
+import { ChatPanel } from './ChatPanel';
 
 interface GameBoardProps {
   gameState: PlayerView;
   currentPlayerId: string;
   onSubmitBid: (amount: number) => Promise<void>;
   onCancelBid: () => Promise<void>;
+  onSendMessage: (text: string) => Promise<void>;
 }
 
 export function GameBoard({
@@ -20,6 +22,7 @@ export function GameBoard({
   currentPlayerId,
   onSubmitBid,
   onCancelBid,
+  onSendMessage,
 }: GameBoardProps) {
   const playerName = (id: string) =>
     gameState.players.find((p) => p.id === id)?.name;
@@ -112,6 +115,12 @@ export function GameBoard({
             <AuctionHistory
               results={gameState.auctionResults}
               players={gameState.players}
+            />
+
+            <ChatPanel
+              messages={gameState.messages}
+              currentPlayerId={currentPlayerId}
+              onSend={onSendMessage}
             />
           </div>
         </div>
